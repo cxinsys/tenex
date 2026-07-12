@@ -1,0 +1,1597 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="GPU-accelerated transfer entropy for gene regulatory network inference from scRNA-seq data">
+      
+      
+      
+        <link rel="canonical" href="https://cxinsys.github.io/tenex/agents/">
+      
+      
+        <link rel="prev" href="../kernels/">
+      
+      
+        <link rel="next" href="../api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>AI Agents - TENEX</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tenex-for-ai-coding-agents" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="TENEX" class="md-header__button md-logo" aria-label="TENEX" data-md-component="logo">
+      
+  <img src="../assets/tenex_logo_darkmode.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            TENEX
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AI Agents
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cxinsys/tenex" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cxinsys/tenex
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../installation/" class="md-tabs__link">
+          
+  
+  
+  Get Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../compute/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  AI Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="TENEX" class="md-nav__button md-logo" aria-label="TENEX" data-md-component="logo">
+      
+  <img src="../assets/tenex_logo_darkmode.png" alt="logo">
+
+    </a>
+    TENEX
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cxinsys/tenex" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cxinsys/tenex
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Computing Transfer Entropy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inferring Gene Networks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running a Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kernels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kernels and Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    AI Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Agents
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-what-tenex-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. What TENEX is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-repository-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Repository layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-installation-and-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Installation and environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-public-api-top-level-tenex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Public API (top-level tenex)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-how-it-works-3-stage-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. How it works (3-stage pipeline)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-notation-used-across-code-docs-and-the-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Notation (used across code, docs, and the paper)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-build-test-and-develop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Build, test, and develop
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Build, test, and develop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-an-inference-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding an inference method
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-invariants-and-guardrails-important-for-ai-edits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Invariants and guardrails (important for AI edits)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Common pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-what-tenex-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. What TENEX is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-repository-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Repository layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-installation-and-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Installation and environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-public-api-top-level-tenex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Public API (top-level tenex)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-how-it-works-3-stage-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. How it works (3-stage pipeline)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-notation-used-across-code-docs-and-the-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Notation (used across code, docs, and the paper)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-build-test-and-develop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Build, test, and develop
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Build, test, and develop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-an-inference-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding an inference method
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-invariants-and-guardrails-important-for-ai-edits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Invariants and guardrails (important for AI edits)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Common pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="tenex-for-ai-coding-agents">TENEX for AI coding agents<a class="headerlink" href="#tenex-for-ai-coding-agents" title="Permanent link">&para;</a></h1>
+<p>This guide is written for AI coding agents such as Claude Code, Codex (GPT),
+Gemini, Grok, and Kimi that help researchers <strong>use</strong> or <strong>extend</strong> TENEX. It captures the architecture, the public API, the invariants that must
+hold, and the workflow for changing the code. Read it before proposing edits or
+generating example code.</p>
+<p>(The same content lives in <code>AGENTS.md</code> at the repository root, which most agents
+discover automatically.)</p>
+<hr />
+<h2 id="1-what-tenex-is">1. What TENEX is<a class="headerlink" href="#1-what-tenex-is" title="Permanent link">&para;</a></h2>
+<p><strong>TENEX</strong> (TENET eXtremely optimized) computes pairwise <strong>transfer entropy (TE)</strong>
+on the GPU to infer <strong>gene regulatory networks (GRNs)</strong> from single-cell RNA-seq
+data. It is a high-performance, numerically faithful reimplementation of
+<a href="https://github.com/cxinsys/fasttenet">FastTENET</a> (itself a fast version of
+TENET).</p>
+<p>The core idea: estimating TE for every ordered gene pair reduces to counting a
+<strong>3-D joint histogram</strong> over three discretized values per cell, namely the
+future level of the target gene, its own present level, and the present level
+of the candidate regulator. This counting is the bottleneck. TENEX accelerates it by</p>
+<ol>
+<li>packing each <code>(future, past-self, past-other)</code> bin triplet into a single
+   integer address and counting directly on the GPU (no sorting), and</li>
+<li>auto-selecting, per dataset and device, the fastest of several CUDA kernels.</li>
+</ol>
+<p>TENEX reproduces FastTENET TE values within float32 precision when no bin
+coarsening is applied.</p>
+<hr />
+<h2 id="2-repository-layout">2. Repository layout<a class="headerlink" href="#2-repository-layout" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>tenex/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── __init__.py            public API surface (see §4)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── io.py                  load_scrna, ScRnaData
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── transferentropy.py     TransferEntropyEngine (orchestrator)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── preprocess.py          FSBW-L discretization, dense remap, bin coarsening
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── pipeline.py            Pipeline / PipelineResult (compute once, infer many)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── result.py              TransferEntropyResult
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── utils.py               helpers (data loading utilities)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── kernels/               TE compute kernels
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── __init__.py          TEKernel ABC, registry, auto_select()
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── gemm_b2.py           GEMM kernel (binary data, b_max == 2)
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── full_smem.py         Full-SMEM kernel (small b_max)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── adaptive_smem.py     Adaptive-SMEM kernel (large b_max, per-pair sizing)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── scatter_add.py       CPU/GPU fallback
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   └── *_surrogate_test.py  fused surrogate-test variants
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── inference/             link inference
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── netweaver.py         NetWeaver (orchestrates inference methods)
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── fdr.py / clr.py / nd.py   matrix-based methods
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── surrogate_test.py    surrogate-based statistical test
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── trace.py             TRACE marginal key-driver inference (OutTE/InTE)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   ├── point.py             POINT placeholder (raises NotImplementedError)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   └── grn.py               GRN container
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── csrc/                  CUDA kernel sources (*.cu), compiled into tenex/_ext
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>└── _ext/                  AOT-compiled extension modules (built at install)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>tests/        pytest suite        tutorials/  runnable examples
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>docs/         mkdocs site         .github/    CI (wheels, docs, index)
+</code></pre></div>
+<hr />
+<h2 id="3-installation-and-environment">3. Installation and environment<a class="headerlink" href="#3-installation-and-environment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Python &gt;= 3.10, Linux x86_64, an NVIDIA GPU for the CUDA path (a CPU fallback
+  exists). PyTorch is required at <strong>runtime</strong> (<code>import tenex</code> imports <code>torch</code>),
+  but is intentionally not in <code>install_requires</code> so the user installs the CUDA
+  build they want; install it separately before TENEX.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Install PyTorch first, then TENEX (PyPI stays primary, TENEX wheels are extra)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu132
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>pip<span class="w"> </span>install<span class="w"> </span>tnx<span class="w"> </span>--extra-index-url<span class="w"> </span>https://cxinsys.github.io/tenex/whl/
+</code></pre></div>
+<p>Change <code>cu132</code> to match the user's CUDA toolkit. See <code>INSTALL.md</code> for the wheel
+matrix, build-from-source, and the JIT fallback.</p>
+<hr />
+<h2 id="4-public-api-top-level-tenex">4. Public API (top-level <code>tenex</code>)<a class="headerlink" href="#4-public-api-top-level-tenex" title="Permanent link">&para;</a></h2>
+<p>Signatures and defaults below are authoritative, so do not invent kwargs.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tenex</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tnx</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Load + align (filter by branch, order by pseudotime)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">scrna</span> <span class="o">=</span> <span class="n">tnx</span><span class="o">.</span><span class="n">load_scrna</span><span class="p">(</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">expression</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">pseudotime</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">branch</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">gene_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">branch_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">sources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">make_binary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="p">)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="c1"># -&gt; ScRnaData with .data (n_genes x n_cells), .gene_names, .sources</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1"># Compute the n x n TE matrix</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">engine</span> <span class="o">=</span> <span class="n">tnx</span><span class="o">.</span><span class="n">TransferEntropyEngine</span><span class="p">(</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="n">data</span><span class="p">,</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">variable_names</span><span class="p">,</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="n">sources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="p">)</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="n">devices</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>        <span class="c1"># list of GPU indices, an int count, or &quot;auto&quot;/-1 for all</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>    <span class="n">binning_method</span><span class="o">=</span><span class="s2">&quot;FSBW-L&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="n">kp</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>    <span class="n">tau</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    <span class="n">autotune</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>    <span class="n">kernel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>    <span class="n">coarsening</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="n">use_numpy_bins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="n">profile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a><span class="p">)</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="c1"># -&gt; TransferEntropyResult: .matrix[i, j] = TE(i -&gt; j), plus .variable_names,</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="c1">#    .bin_arrs, .n_per_var, .b_max, .tau, .kernel, .timings (numpy-compatible)</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span class="c1"># Infer a GRN</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a><span class="n">nw</span> <span class="o">=</span> <span class="n">tnx</span><span class="o">.</span><span class="n">NetWeaver</span><span class="p">(</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>    <span class="n">result</span><span class="p">,</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>    <span class="n">sources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>    <span class="n">fdr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>    <span class="n">links</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>    <span class="n">is_trimming</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>    <span class="n">trim_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a><span class="p">)</span>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a><span class="n">grn</span><span class="p">,</span> <span class="n">trimmed</span> <span class="o">=</span> <span class="n">nw</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;fdr&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>   <span class="c1"># device=None auto-detects</span>
+</code></pre></div>
+<ul>
+<li><code>tnx.available_methods()</code> -&gt; <code>['clr', 'fdr', 'nd', 'point', 'surrogate_test', 'trace']</code>.
+  <code>point</code> is a reserved placeholder and raises <code>NotImplementedError</code>.</li>
+<li><code>surrogate_test</code> returns a <code>SurrogateTestResult</code> (<code>.effective_te</code>, <code>.p_values</code>,
+  <code>.grn</code>, ...). Kwargs: <code>n_surrogates</code>, <code>shuffle_method</code> (<code>block</code>/<code>random</code>),
+  <code>block_length</code>, <code>p_method</code> (<code>parametric</code>/<code>mc</code>), <code>fused</code>, <code>seed</code>, <code>devices</code>.</li>
+<li><code>trace</code> returns a <code>TRACEResult</code> (<code>.outte</code>, <code>.inte</code>, <code>top_drivers(k)</code>,
+  <code>top_receivers(k)</code>). Kwargs: <code>n_surrogates</code>, <code>significance</code>, <code>devices</code>.</li>
+<li><code>GRN</code>: <code>.source</code>, <code>.target</code>, <code>.te</code>, <code>to_sif()</code>, <code>to_edge_list()</code>.</li>
+<li><code>tnx.Pipeline(engine, fdr=0.05).run(methods=[...], method_kwargs={...})</code> computes
+  the TE matrix once and reuses it across methods.</li>
+<li>Kernels: <code>tnx.registered_kernels()</code> -&gt; kernels named <code>GEMM-B2</code>, <code>Full-SMEM</code>,
+  <code>Adaptive-SMEM</code>, <code>scatter_add</code>. <code>tnx.auto_select(...)</code>, <code>tnx.get_kernel(name)</code>
+  (case-insensitive), <code>tnx.TEKernel</code>.</li>
+</ul>
+<p>To restrict the TE computation to a set of regulators (transcription factors),
+pass them as <code>sources</code> to <code>TransferEntropyEngine</code>; TE is then computed only
+<strong>from</strong> those genes (GEMM-B2 is excluded in this mode). <code>load_scrna(sources=...)</code>
+only records the list on the <code>ScRnaData</code>, and <code>NetWeaver(sources=...)</code> forwards
+them to the inference step; neither one filters the TE computation itself.</p>
+<hr />
+<h2 id="5-how-it-works-3-stage-pipeline">5. How it works (3-stage pipeline)<a class="headerlink" href="#5-how-it-works-3-stage-pipeline" title="Permanent link">&para;</a></h2>
+<p><strong>Stage 1. Discretization and dense remapping</strong> (<code>preprocess.py</code>). Continuous
+expression is binned with the bandwidth-based <strong>FSBW-L</strong> scheme (<code>kp = 0.5</code>).
+Because most genes use only a few of the available bins, TENEX renumbers the
+used bins of each gene to consecutive integers <code>0..b_g-1</code>. The global maximum
+<code>b_max = max_g b_g</code> drives kernel selection.</p>
+<p><strong>Stage 2. Kernel selection and TE computation</strong> (<code>kernels/</code>). <code>auto_select</code>
+returns the first supported kernel in priority order:</p>
+<table>
+<thead>
+<tr>
+<th>Kernel</th>
+<th>Selected when</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GEMM-B2</code></td>
+<td><code>b_max == 2</code>, CUDA, no source/TF filter</td>
+<td>binary counts become 3 matrix multiplications + 1 fused Triton kernel; no per-pair histogram</td>
+</tr>
+<tr>
+<td><code>Full-SMEM</code></td>
+<td><code>b_max**3 &lt;= 65536</code> and the histogram fits the device shared-memory capacity</td>
+<td>full 3-D histogram in on-chip shared memory (SMEM), one gene pair per CUDA block, fast SMEM atomics</td>
+</tr>
+<tr>
+<td><code>Adaptive-SMEM</code></td>
+<td>CUDA available, larger <code>b_max</code></td>
+<td>per-pair histogram sized <code>b_i*b_i*b_j</code> instead of the global max; high-cardinality genes are coarsened to fit</td>
+</tr>
+<tr>
+<td><code>scatter_add</code></td>
+<td>no CUDA device</td>
+<td>CPU fallback (also a universal fallback)</td>
+</tr>
+</tbody>
+</table>
+<p>Key sizing facts (for reasoning about kernel choice and memory):</p>
+<ul>
+<li>Full-SMEM per-block size: <code>SMEM(b_max, W) = [b_max*(b_max+1)^2 + W] * 4</code> bytes
+  (<code>W</code> = warps per block; count arrays are <code>int32</code>, hence <code>* 4</code>).</li>
+<li><code>S_opt-in</code> is the device opt-in shared memory, queried at runtime via the CUDA
+  attribute <code>cudaDevAttrMaxSharedMemoryPerBlockOptin</code>. <strong>It is device-dependent.</strong>
+  On the workstation GPUs used for the paper benchmarks (RTX A5000, RTX 4090,
+  RTX PRO 6000 Blackwell Max-Q, all compute capability with 99 KB opt-in) it is
+  101,376 bytes (99 KB), giving <code>b_safe = 28</code>. Data-center cards differ. Never
+  hard-code a single value; derive it from the device.</li>
+<li><code>b_safe</code> = largest <code>b</code> with <code>[b*(b+1)^2 + W] * 4 &lt;= S_opt-in</code>. When
+  <code>b_max &gt; b_safe</code>, <strong>bin coarsening</strong> uniformly merges adjacent bins down to
+  <code>b_safe</code> so every pair fits on chip. Coarsening is lossy but its accuracy
+  impact is small; it is the only step that breaks bit-for-bit equivalence with
+  FastTENET.</li>
+</ul>
+<p><strong>Stage 3. Integration and GRN inference</strong> (<code>inference/</code>). Per-pair (and
+per-GPU) TE values are assembled into the <code>n x n</code> matrix; edges are selected by
+significance thresholding (z-score + Benjamini-Hochberg FDR) and optionally
+trimmed by the data processing inequality (DPI) to remove indirect edges.</p>
+<p>Multi-GPU: the SMEM kernels split gene pairs across devices via a thread pool;
+GEMM-B2 splits output rows.</p>
+<hr />
+<h2 id="6-notation-used-across-code-docs-and-the-paper">6. Notation (used across code, docs, and the paper)<a class="headerlink" href="#6-notation-used-across-code-docs-and-the-paper" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>n</code>: number of genes</li>
+<li><code>g</code>: gene index (<code>g = 1..n</code>), the subscript in <code>max_g</code> and <code>b_g</code></li>
+<li><code>i, j</code>: gene-pair indices, used in <code>T[i, j]</code>, <code>b_i</code>, <code>b_j</code></li>
+<li><code>l</code>: number of cells along pseudotime</li>
+<li><code>l_eff</code>: <code>l - tau</code>, the number of valid lagged time points</li>
+<li><code>tau</code>: time lag (default 1, FastTENET's <code>dt</code>)</li>
+<li><code>kp</code>: FSBW-L bandwidth left-shift parameter (kappa, default 0.5)</li>
+<li><code>b_g</code>: bin count after dense remapping (bins are <code>0..b_g-1</code> for gene <code>g</code>)</li>
+<li><code>b_max</code>: global max bin count, <code>b_max = max_g b_g</code> (kernel-selection criterion)</li>
+<li><code>b_i, b_j</code>: per-pair bin counts<ul>
+<li>Adaptive-SMEM sizes each pair histogram as <code>b_i*b_i*b_j</code></li>
+</ul>
+</li>
+<li><code>b_safe</code>: max bin count fitting the device SMEM capacity (coarsening trigger)</li>
+<li><code>W</code>: warps per CUDA block (appears in the SMEM size formula)</li>
+<li><code>S_opt-in</code>: device opt-in shared-memory capacity, in bytes<ul>
+<li>queried at runtime</li>
+<li>sets <code>b_safe</code></li>
+</ul>
+</li>
+<li><code>X_r</code>: raw binned matrix (FSBW-L output)</li>
+<li><code>X_d</code>: dense-remapped binned matrix</li>
+<li><code>X_c</code>: coarsened binned matrix</li>
+<li><code>T</code>: TE matrix<ul>
+<li>internal layout: <code>T[i, j] = TE(j -&gt; i)</code></li>
+<li>public layout: <code>result.matrix[i, j] = TE(i -&gt; j)</code></li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="7-build-test-and-develop">7. Build, test, and develop<a class="headerlink" href="#7-build-test-and-develop" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Build the AOT wheel</strong> (compiles <code>csrc/*.cu</code> into <code>tenex/_ext</code>):
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">FORCE_CUDA</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>bdist_wheel
+</code></pre></div>
+  <code>setup.py</code> imports <code>torch</code> at build time and lists the CUDA extensions; the
+  <code>_ext</code> <code>.so</code> files are gitignored and produced by the build.</li>
+<li><strong>Run tests:</strong> <code>pytest</code> (suite under <code>tests/</code>; CUDA tests are marked <code>cuda</code>).</li>
+<li><strong>Docs:</strong> <code>mkdocs serve</code> (config in <code>mkdocs.yml</code>, sources under <code>docs/</code>).</li>
+<li><strong>CI:</strong> <code>.github/workflows/build-wheels.yml</code> builds the wheel matrix
+  (PyTorch x CUDA x Python); <code>docs.yml</code> deploys the docs; <code>publish-index.yml</code>
+  publishes the wheel index.</li>
+</ul>
+<h3 id="adding-a-kernel">Adding a kernel<a class="headerlink" href="#adding-a-kernel" title="Permanent link">&para;</a></h3>
+<p>Subclass <code>TEKernel</code> (<code>kernels/__init__.py</code>), implement <code>supports(...)</code> (the
+selection predicate) and the compute entry points, then <code>register(...)</code> it. The
+registry is priority-ordered; <code>auto_select</code> returns the first whose <code>supports</code>
+is true. If it needs a CUDA source, add the <code>.cu</code> to <code>csrc/</code> and a matching
+<code>CUDAExtension</code> in <code>setup.py</code>.</p>
+<h3 id="adding-an-inference-method">Adding an inference method<a class="headerlink" href="#adding-an-inference-method" title="Permanent link">&para;</a></h3>
+<p>Register it in <code>inference/__init__.py</code> so it appears in <code>available_methods()</code> and
+is reachable through <code>NetWeaver.infer(method=...)</code>.</p>
+<hr />
+<h2 id="8-invariants-and-guardrails-important-for-ai-edits">8. Invariants and guardrails (important for AI edits)<a class="headerlink" href="#8-invariants-and-guardrails-important-for-ai-edits" title="Permanent link">&para;</a></h2>
+<p>These are hard constraints. Violating them is a regression.</p>
+<ol>
+<li><strong>Numerical fidelity.</strong> TENEX must reproduce FastTENET TE values (float32
+   precision) on every code path except where bin coarsening is explicitly
+   applied. Never introduce overflow, NaN, or silent precision loss. Count
+   arrays are <code>int32</code> (assumes <code>l_eff &lt; 2^31</code>); bin indices are <code>int8</code> when
+   <code>b_max &lt;= 127</code>.</li>
+<li><strong>No data-specific hyperparameters.</strong> The pipeline must work across all data
+   scales. Do not tune thresholds, batch sizes, or <code>b_safe</code> to one dataset;
+   derive device-dependent quantities at runtime.</li>
+<li><strong>Rebuild after kernel/source changes.</strong> Editing <code>csrc/*.cu</code> or anything that
+   affects the compiled extensions requires rebuilding and reinstalling the AOT
+   wheel; the installed <code>_ext/*.so</code> will otherwise be stale.</li>
+<li><strong>CPU/GPU parity.</strong> The CPU fallback and the GPU kernels must agree
+   numerically. The <code>auto_select</code> decision is deterministic from <code>(b_max,
+   device, source_filter)</code>.</li>
+<li><strong><code>use_numpy_bins</code> semantics.</strong> <code>None</code> follows the device. On CUDA it uses
+   GPU binning, which is about 5x faster and correlates at ~1.0 but is not
+   bit-for-bit. On CPU it uses NumPy binning, which is FastTENET-exact. <code>True</code>
+   or <code>False</code> overrides this default, which should be preserved.</li>
+<li><strong>Match CUDA versions.</strong> A TENEX wheel is tied to a specific PyTorch x CUDA
+   build; never assume a wheel works across CUDA majors.</li>
+</ol>
+<hr />
+<h2 id="9-common-pitfalls">9. Common pitfalls<a class="headerlink" href="#9-common-pitfalls" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Passing a NumPy array to <code>load_scrna</code> requires <code>gene_names</code>.</li>
+<li><code>result.matrix[i, j]</code> is <code>TE(i -&gt; j)</code> (the public layout is transposed from the
+  internal <code>T[i, j] = TE(j -&gt; i)</code>).</li>
+<li>TRACE and the surrogate test consume the discretized bins on the
+  <code>TransferEntropyResult</code>; run them on a result produced with the default
+  single-lag binning.</li>
+<li>Forcing <code>kernel="GEMM-B2"</code> fails unless the data is binary (<code>b_max == 2</code>) and
+  no source filter is active.</li>
+</ul>
+<hr />
+<h2 id="10-references">10. References<a class="headerlink" href="#10-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Paper: a manuscript describing TENEX (citation will be added on publication).</li>
+<li>Upstream: FastTENET (Sung et al.) and TENET.</li>
+<li>License: TENEX Non-Commercial License (see <code>LICENSE</code>). Non-commercial use only.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; Daewon Lee
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "content.code.copy", "content.code.annotate", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
