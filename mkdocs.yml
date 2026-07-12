@@ -1,0 +1,79 @@
+site_name: TENEX
+site_description: GPU-accelerated transfer entropy for gene regulatory network inference from scRNA-seq data
+site_url: https://cxinsys.github.io/tenex/
+repo_url: https://github.com/cxinsys/tenex
+repo_name: cxinsys/tenex
+copyright: Copyright &copy; Daewon Lee
+
+theme:
+  name: material
+  logo: assets/tenex_logo_darkmode.png
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.snippets:
+      base_path: [".", "docs"]
+      check_paths: true
+
+plugins:
+  - search
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Get Started:
+      - Installation: installation.md
+      - Quick Start: quickstart.md
+  - User Guide:
+      - Computing Transfer Entropy: compute.md
+      - Inferring Gene Networks: inference.md
+      - Running a Pipeline: pipeline.md
+      - Kernels and Performance: kernels.md
+  - AI Guide:
+      - AI Agents: agents.md
+  - Reference:
+      - API Reference: api.md

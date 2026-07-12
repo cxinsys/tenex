@@ -1,0 +1,2 @@
+recursive-include tenex/csrc *.cu
+recursive-include tenex/assets *.png
