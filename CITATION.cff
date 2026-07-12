@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: >-
+  If you use TENEX, please cite this software as below. A paper describing TENEX
+  is in preparation, and its citation will be added upon publication.
+title: "TENEX: TENET eXtremely optimized"
+abstract: >-
+  TENEX is a GPU-accelerated framework for computing pairwise transfer entropy
+  and inferring gene regulatory networks from single-cell RNA-seq data.
+type: software
+authors:
+  - family-names: "Lee"
+    given-names: "Daewon"
+    email: "dwlee@cau.ac.kr"
+version: "0.1.0"
+date-released: "2026-07-13"
+license: "LicenseRef-TENEX-NonCommercial"
+repository-code: "https://github.com/cxinsys/tenex"
+url: "https://github.com/cxinsys/tenex"
+keywords:
+  - TENET
+  - FastTENET
+  - transfer entropy
+  - gene regulatory network
+  - GRN inference
+  - single-cell RNA-seq
+  - scRNA-seq
+  - GPU
+  - CUDA

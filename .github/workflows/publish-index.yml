@@ -1,0 +1,44 @@
+# NOTE ON GITHUB PAGES LAYOUT
+# This repository publishes two things to the SAME `gh-pages` branch:
+#   - the MkDocs documentation site at the branch root (docs.yml), and
+#   - the PEP 503 wheel index under `whl/` (this workflow).
+# Both deploy with peaceiris/actions-gh-pages and `keep_files: true`, so neither
+# workflow wipes the other. The repository Pages source MUST be set to
+# "Deploy from a branch: gh-pages" (root). The wheel index then resolves at
+# https://cxinsys.github.io/tenex/whl/ (matching README.md / INSTALL.md).
+
+name: Publish Package Index
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Generate PEP 503 index
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv python install 3.11
+          uv venv
+          uv pip install requests
+          uv run --no-project python .github/scripts/generate_index.py
+
+      - name: Deploy wheel index to gh-pages under whl/ (keep the docs site)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          destination_dir: whl
+          keep_files: true

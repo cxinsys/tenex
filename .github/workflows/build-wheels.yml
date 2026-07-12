@@ -1,0 +1,292 @@
+name: Build Wheels
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Three wheel families cover every OS:
+#   - Linux CUDA wheels   (GPU on Linux)
+#   - Windows CUDA wheels  (GPU on Windows 11)
+#   - one universal CPU wheel, py3-none-any (macOS, Windows, and Linux; no GPU)
+#
+# macOS has no CUDA, so it uses the universal CPU wheel. The CUDA kernels load
+# lazily, so `import tenex` and the CPU path work everywhere the CPU wheel installs.
+#
+# Valid torch/CUDA pairs (checked against the PyTorch index and the Windows CUDA
+# toolkit installer, which currently tops out at CUDA 12.9):
+#   Linux   : torch 2.13.0 -> cu132,  torch 2.11.0 -> cu128
+#   Windows : torch 2.8.0  -> cu128 and cu126  (2.9+ miscompiles with the
+#             runner's MSVC 14.44, a known PyTorch bug; 2.8.0 is the last that builds)
+#
+# Wheel naming: tnx-0.1.0+pt213cu132-cp312-cp312-linux_x86_64.whl (CUDA)
+#               tnx-0.1.0-py3-none-any.whl                        (universal CPU)
+
+env:
+  FORCE_CUDA: "1"
+
+jobs:
+  # ── Linux CUDA wheels (GPU) ───────────────────────────────────────────────
+  linux-cuda:
+    name: linux ${{ matrix.cuda.cuda_tag }} py${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        cuda:
+          - torch: "2.13.0"
+            cuda_tag: "cu132"
+            index: "https://download.pytorch.org/whl/cu132"
+            image: "pytorch/manylinux2_28-builder:cuda13.2"
+            arch: "7.5;8.0;8.6;8.9;9.0;10.0;12.0"
+          - torch: "2.11.0"
+            cuda_tag: "cu128"
+            index: "https://download.pytorch.org/whl/cu128"
+            image: "pytorch/manylinux2_28-builder:cuda12.8"
+            arch: "7.0;7.5;8.0;8.6;8.9;9.0;12.0"
+    container:
+      image: ${{ matrix.cuda.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Locate the CPython for ${{ matrix.python }}
+        id: pybin
+        run: |
+          V='${{ matrix.python }}'
+          TAG="cp${V/./}"
+          for c in /opt/python/${TAG}-${TAG}/bin/python /opt/python/${TAG}-*/bin/python "$(command -v python${V} || true)"; do
+            if [ -n "$c" ] && [ -x "$c" ]; then
+              echo "bin=$c" >> "$GITHUB_OUTPUT"; echo "using $c"; exit 0
+            fi
+          done
+          echo "python ${V} not found; /opt/python has:"; ls /opt/python 2>/dev/null || true
+          exit 1
+
+      - name: Install build dependencies
+        run: |
+          PY='${{ steps.pybin.outputs.bin }}'
+          "$PY" -m pip install --upgrade pip setuptools wheel numpy auditwheel
+          "$PY" -m pip install torch==${{ matrix.cuda.torch }} --index-url ${{ matrix.cuda.index }}
+
+      - name: Build the wheel
+        env:
+          TORCH_CUDA_ARCH_LIST: ${{ matrix.cuda.arch }}
+        run: |
+          PY='${{ steps.pybin.outputs.bin }}'
+          TORCH_SHORT=$(echo "${{ matrix.cuda.torch }}" | cut -d. -f1-2 | tr -d '.')
+          export TENEX_VERSION="0.1.0+pt${TORCH_SHORT}${{ matrix.cuda.cuda_tag }}"
+          "$PY" setup.py bdist_wheel
+
+      - name: Repair to a manylinux tag (exclude torch and CUDA libraries)
+        run: |
+          PY='${{ steps.pybin.outputs.bin }}'
+          mkdir -p dist_fixed
+          "$PY" -m auditwheel repair dist/*.whl --plat manylinux_2_28_x86_64 \
+            --exclude libcudart.so --exclude libc10.so --exclude libc10_cuda.so \
+            --exclude libtorch.so --exclude libtorch_cpu.so --exclude libtorch_cuda.so \
+            --exclude libtorch_python.so --exclude libnvToolsExt.so \
+            -w dist_fixed/ || cp dist/*.whl dist_fixed/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-linux-${{ matrix.cuda.cuda_tag }}-py${{ matrix.python }}
+          path: dist_fixed/*.whl
+
+  # ── Windows CUDA wheels (GPU) ─────────────────────────────────────────────
+  windows-cuda:
+    name: windows ${{ matrix.cuda.cuda_tag }} py${{ matrix.python }}
+    # windows-2022 provides Visual Studio 2022 (windows-latest ships VS 18, which
+    # nvcc rejects). PyTorch 2.9+ headers miscompile with the runner's MSVC 14.44
+    # (a known PyTorch bug, error C2872), and downgrading the MSVC toolset does
+    # not help because 14.40-14.44 are all affected. So the Windows GPU wheels are
+    # built against PyTorch 2.8.0, the last release that compiles with a current MSVC.
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        cuda:
+          - torch: "2.8.0"
+            cuda_tag: "cu128"
+            index: "https://download.pytorch.org/whl/cu128"
+            cuda_ver: "12.8.1"
+            arch: "7.5;8.0;8.6;8.9;9.0;12.0"
+          - torch: "2.8.0"
+            cuda_tag: "cu126"
+            index: "https://download.pytorch.org/whl/cu126"
+            cuda_ver: "12.6.3"
+            arch: "7.5;8.0;8.6;8.9;9.0"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Set up the MSVC toolchain
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install the CUDA toolkit ${{ matrix.cuda.cuda_ver }}
+        uses: Jimver/cuda-toolkit@v0.2.24
+        with:
+          cuda: ${{ matrix.cuda.cuda_ver }}
+          method: network
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel numpy
+          python -m pip install torch==${{ matrix.cuda.torch }} --index-url ${{ matrix.cuda.index }}
+
+      - name: Build the wheel
+        # pwsh, not bash: Git bash puts its own link.exe ahead of the MSVC linker
+        # on PATH, which breaks the link step. pwsh keeps the MSVC toolchain first.
+        shell: pwsh
+        env:
+          TORCH_CUDA_ARCH_LIST: ${{ matrix.cuda.arch }}
+          # torch's cpp_extension needs this when msvc-dev-cmd pre-activates VC.
+          DISTUTILS_USE_SDK: "1"
+        run: |
+          $short = ("${{ matrix.cuda.torch }}".Split('.')[0..1]) -join ''
+          # Brace the variable so "$short" is not read as "$short<cuda_tag>".
+          $env:TENEX_VERSION = "0.1.0+pt${short}${{ matrix.cuda.cuda_tag }}"
+          python setup.py bdist_wheel
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-windows-${{ matrix.cuda.cuda_tag }}-py${{ matrix.python }}
+          path: dist/*.whl
+
+  # ── Universal CPU wheel (macOS, Windows, Linux; no GPU) ───────────────────
+  cpu-universal:
+    name: universal cpu wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the pure-Python wheel (no CUDA extensions)
+        env:
+          TENEX_CPU_ONLY: "1"
+        run: |
+          uv venv --python 3.11
+          uv pip install build
+          uv run --no-project python -m build --wheel
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-cpu-universal
+          path: dist/*.whl
+
+  # ── Cross-OS install and import smoke test of the universal CPU wheel ──────
+  smoke-cpu:
+    name: smoke ${{ matrix.os }}
+    needs: cpu-universal
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel-cpu-universal
+          path: dist
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install the CPU wheel and run the CPU tests
+        run: |
+          uv venv --python 3.12
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            uv pip install torch
+          else
+            uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+          fi
+          uv pip install numpy scipy statsmodels tqdm pytest
+          uv pip install dist/*.whl
+          # --no-project so uv does not try to build the checked-out source tree.
+          uv run --no-project python -c "import tenex; print('import OK', tenex.__version__)"
+          uv run --no-project pytest tests/ -q -k "not cuda"
+
+  # ── Source distribution (for PyPI and source installs) ────────────────────
+  sdist:
+    name: source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the sdist (no torch needed)
+        env:
+          TENEX_CPU_ONLY: "1"
+        run: |
+          uv venv --python 3.11
+          uv pip install build
+          uv run --no-project python -m build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  # ── Publish to PyPI (only on a v* tag) ────────────────────────────────────
+  # PyPI rejects local version labels, so only the pure-Python CPU wheel
+  # (tnx-0.1.0-py3-none-any.whl) and the sdist go here. The CUDA wheels
+  # (tnx-0.1.0+pt...cu...) are distributed through the GitHub Release below.
+  publish-pypi:
+    name: publish to PyPI
+    needs: [cpu-universal, sdist, smoke-cpu]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel-cpu-universal
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+      - name: Publish to PyPI (Trusted Publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+  # ── GitHub Release with every wheel (only on a v* tag) ────────────────────
+  release:
+    needs: [linux-cuda, windows-cuda, cpu-universal, smoke-cpu]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-wheels
+          merge-multiple: true
+
+      - name: Publish the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: all-wheels/*.whl
+          generate_release_notes: true

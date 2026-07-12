@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# The package installs and imports on every OS with a CPU-only PyTorch. The
+# CUDA kernels load lazily, so `import tenex` and the CPU scatter_add path work
+# on Linux, macOS, and Windows without a GPU. This matrix proves that.
+jobs:
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Create the virtual environment
+        run: uv venv --python ${{ matrix.python-version }}
+
+      - name: Install CPU PyTorch and runtime dependencies
+        run: |
+          # macOS wheels of torch live on PyPI; the CPU index is Linux/Windows.
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            uv pip install torch
+          else
+            uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+          fi
+          uv pip install numpy scipy statsmodels tqdm pytest
+
+      - name: Install TENEX (pure-Python, no CUDA extensions)
+        env:
+          TENEX_CPU_ONLY: "1"
+        run: uv pip install -e .
+
+      - name: Import check
+        run: |
+          uv run --no-project python -c "from tenex import TransferEntropyEngine, __version__; print(f'tenex {__version__} OK')"
+          uv run --no-project python -c "from tenex.kernels import registered_kernels; print('Kernels:', [k.name for k in registered_kernels()])"
+
+      - name: Run CPU tests
+        run: uv run --no-project pytest tests/ -v -k "not cuda" --tb=short
+
+  build-sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build source distribution
+        env:
+          TENEX_CPU_ONLY: "1"
+        run: |
+          uv venv --python 3.11
+          uv pip install build
+          uv run --no-project python -m build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz

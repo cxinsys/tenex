@@ -1,0 +1,45 @@
+# NOTE ON GITHUB PAGES LAYOUT
+# This repository publishes two things to the SAME `gh-pages` branch:
+#   - the MkDocs documentation site at the branch root (this workflow), and
+#   - the PEP 503 wheel index under `whl/` (publish-index.yml).
+# Both deploy with peaceiris/actions-gh-pages and `keep_files: true`, so neither
+# workflow wipes the other. The repository Pages source MUST be set to
+# "Deploy from a branch: gh-pages" (root) for this to serve correctly.
+
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'tenex/**'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install documentation dependencies
+        run: pip install -r docs/requirements.txt
+
+      - name: Build docs
+        run: mkdocs build --clean
+
+      - name: Deploy docs to gh-pages (site root, keep the whl/ index)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          keep_files: true

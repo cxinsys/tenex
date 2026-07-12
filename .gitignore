@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.so
+*.pyd
+wheelhouse/
+
+# Compiled CUDA extensions (AOT, built at install time)
+tenex/_ext/*.so
+tenex/_ext/*.pyd
+
+# Build / site artifacts
+_site/
+.uv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
